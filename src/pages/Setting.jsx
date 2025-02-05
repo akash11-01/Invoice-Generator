@@ -9,10 +9,12 @@ export default function Setting() {
     const fileRef = useRef();
     const [updateName, setUpdateName] = useState(localStorage.getItem('cName'))
     const [imageUrl, setImageUrl] = useState("")
-    // const [authUser, setAuthUser] = useState("")
+    const [imageUploadLoading, setImageUploadLoading] = useState(false)
+    const [submitLoading, setSubmitLoading] = useState(false)
 
     const uploadOnCloudinary = async () => {
         if (file) {
+            setImageUploadLoading(true)
             const data = new FormData();
             data.append("file", file);
             data.append("upload_preset", "Profile_Picture");
@@ -29,7 +31,9 @@ export default function Setting() {
 
                 const fileUrl = await res.json();
                 setImageUrl(fileUrl.url); // Set image URL immediately
+                setImageUploadLoading(false)
             } catch (error) {
+                setImageUploadLoading(false)
                 console.log(error)
             }
         }
@@ -60,6 +64,7 @@ export default function Setting() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitLoading(true)
         const auth = getAuth();
         const user = auth.currentUser;
         // console.log(user)
@@ -77,7 +82,9 @@ export default function Setting() {
                 });
                 localStorage.setItem('photoURL', profilePic)
                 localStorage.setItem('cName', updateName)
+                setSubmitLoading(false)
             } catch (error) {
+                setSubmitLoading(false)
                 console.log(error)
             }
         }
@@ -93,6 +100,8 @@ export default function Setting() {
                         onChange={(e) => setFile(e.target.files[0])}
                         type="file"
                         ref={fileRef} hidden
+                        disabled={imageUploadLoading}
+                        accept='image/'
                     />
                     <img
                         src={profilePic}
@@ -106,7 +115,12 @@ export default function Setting() {
                         placeholder='Enter your name here'
                         className='border p-2 rounded-md w-[80%]'
                     />
-                    <button type='submit' className='border bg-slate-600 p-2 text-lg font-bold text-white w-[80%] rounded-md'>Update Name</button>
+                    {
+                        !submitLoading ? <button type='submit' className='border bg-slate-600 p-2 text-lg font-bold text-white w-[80%] rounded-md'>Update Name</button>
+                            : (
+                                <p className="">Loading..</p>
+                            )
+                    }
                 </form>
 
             </div>

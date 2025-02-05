@@ -1,19 +1,21 @@
 import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore'
 import React, { useEffect, useState } from 'react'
 import { db } from '../firebas';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MdDelete } from 'react-icons/md';
 import { FaEye } from 'react-icons/fa';
 
 export default function Invoices() {
     const [invoices, setInvoices] = useState([])
     const navigate = useNavigate();
+    const [invoiceLoading, setInvoiceLoading] = useState(false)
 
     useEffect(() => {
         getData();
     }, [])
 
     const getData = async () => {
+        setInvoiceLoading(true)
         const q = query(collection(db, "invoice"), where('uid', "==", localStorage.getItem('uid'))) // filtering the invoice og particular user
         const querySnapshot = await getDocs(q)
         const data = querySnapshot.docs.map(doc => ({
@@ -21,6 +23,7 @@ export default function Invoices() {
             ...doc.data() //Har ek document ka data
         }))
         setInvoices(data)
+        setInvoiceLoading(false)
     }
 
     const deleteInvoice = async (id) => {
@@ -36,7 +39,7 @@ export default function Invoices() {
     }
     return (
         <div>
-            {invoices.map(data => (
+            {!invoiceLoading ? invoices.length > 0 ? invoices.map(data => (
                 <div key={data.id} className='flex justify-between items-center border p-3 bg-slate-50 m-2'>
                     <p>{data.to}</p>
                     <p>{new Date(data.date.seconds * 1000).toLocaleDateString()}</p>
@@ -56,7 +59,15 @@ export default function Invoices() {
                         </button>
                     </div>
                 </div>
-            ))}
+            )) : (
+                <div className="">
+                    <p>You don't have any Invoice</p>
+                    <Link to={'/dashboard/new-invoice'}>Create New Invoice</Link>
+                </div>
+            ) : (
+                <div className="text-center font-bold text-lg">Loading..</div>
+            )
+            }
         </div>
     )
 }

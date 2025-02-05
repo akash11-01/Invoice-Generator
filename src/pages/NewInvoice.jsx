@@ -12,11 +12,14 @@ export default function NewInvoice() {
     const [address, setAddress] = useState("")
     const [products, setProducts] = useState([]);
     const [Total, setTotal] = useState(0)
+    const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
 
 
     const handleSubmit = (e) => {
         e.preventDefault();
+
+
         setProducts([...products, { 'id': products.length, 'name': productName, 'price': productPrice, 'quantity': productQuantity }])
         setProductName('')
         setProductPrice('')
@@ -34,6 +37,7 @@ export default function NewInvoice() {
 
     //saving the details in databses
     const saveDetails = async () => {
+        setLoading(true)
         const data = await addDoc(collection(db, 'invoice'), {
             to: to,
             phone: phone,
@@ -43,6 +47,7 @@ export default function NewInvoice() {
             uid: localStorage.getItem('uid'),
             date: Timestamp.fromDate(new Date())
         })
+        setLoading(false)
 
         // console.log(data)
     }
@@ -52,7 +57,15 @@ export default function NewInvoice() {
             <div className='ml-3 p-2'>
                 <div className="mb-3 flex justify-between">
                     <h1 className='text-lg font-bold text-slate-900'>New Invoice</h1>
-                    <button onClick={saveDetails} className='font-semibold border p-2 bg-zinc-500 text-white rounded-md'>Save Details</button>
+                    {!loading ? <button
+                        onClick={saveDetails}
+                        className='font-semibold border p-2 bg-zinc-500 text-white rounded-md'>
+                        Save Details
+                    </button>
+                        : (
+                            <p className='text-center'>Loading..</p>
+                        )
+                    }
                 </div>
                 <form className='flex flex-col gap-5' onSubmit={handleSubmit}>
                     <div className="flex gap-4 ">

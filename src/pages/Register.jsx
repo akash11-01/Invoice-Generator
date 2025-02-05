@@ -1,5 +1,5 @@
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { auth, db } from "../firebas";
 import { doc, setDoc } from "firebase/firestore";
@@ -11,6 +11,9 @@ export default function Login() {
     const navigate = useNavigate();
     const [error, setError] = useState("");
     const [imageUrl, setImageUrl] = useState("");
+    const [submitLoading, setSubmitLoading] = useState(false)
+    const [uploadLoading, setUploadLoading] = useState(false)
+    const [uploadedFileURL, setUploadFileUrl] = useState()
 
     const handleChange = (e) => {
         setFormdata({
@@ -19,9 +22,21 @@ export default function Login() {
         });
     };
 
+    useEffect(() => {
+        if (!file) return
+        uploadOnCloudinary()
+    }, [file])
+
+
+    useEffect(() => {
+        if (imageUrl) {
+            setUploadFileUrl(imageUrl)
+        }
+    }, [imageUrl])
+
     const uploadOnCloudinary = async () => {
         if (!file) return null; // Prevent upload if no file is selected
-
+        setUploadLoading(true)
         const data = new FormData();
         data.append("file", file);
         data.append("upload_preset", "Profile_Picture");
@@ -38,22 +53,19 @@ export default function Login() {
 
             const fileUrl = await res.json();
             setImageUrl(fileUrl.url); // Set image URL immediately
+            setUploadLoading(false)
             return fileUrl.url;
         } catch (error) {
             console.error("Cloudinary Upload Error:", error);
             setError("Image upload failed. Try again.");
+            setUploadLoading(false)
             return null;
         }
     };
 
     const submitHandler = async (e) => {
         e.preventDefault();
-
-        let uploadedFileURL = "";
-        if (file) {
-            uploadedFileURL = await uploadOnCloudinary();
-            if (!uploadedFileURL) return; // Stop if upload fails
-        }
+        setSubmitLoading(true)
 
         createUserWithEmailAndPassword(auth, formdata.email, formdata.password)
             .then(async (newUser) => {
@@ -73,11 +85,12 @@ export default function Login() {
                 localStorage.setItem("photoURL", newUser.user.photoURL);
                 localStorage.setItem("email", newUser.user.email);
                 localStorage.setItem("uid", newUser.user.uid)
-
+                setSubmitLoading(false)
                 setError("");
                 navigate("/dashboard");
             })
             .catch((err) => {
+                setSubmitLoading(false)
                 setError(err.message);
                 console.log(err);
             });
@@ -131,29 +144,40 @@ export default function Login() {
                                     id="image"
                                     onChange={(e) => setFile(e.target.files[0])}
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => fileRef.current.click()}
-                                    className="border p-3 ml-3 mr-3 rounded-lg"
-                                >
-                                    Upload Image
-                                </button>
+                                {
+                                    !uploadLoading ? <button
+                                        type="button"
+                                        onClick={() => fileRef.current.click()}
+                                        className="border p-3 ml-3 mr-3 rounded-lg"
+                                        disabled={uploadLoading}
+                                    >
+                                        Upload Image
+                                    </button> : (
+                                        <div className="text-center">Uploading Image</div>
+                                    )
+                                }
 
                                 {/* Show uploaded image preview */}
-                                {imageUrl && (
+                                {uploadedFileURL && (
                                     <img
-                                        src={imageUrl}
+                                        src={uploadedFileURL}
                                         alt="Uploaded Preview"
-                                        className="w-20 h-20 rounded-full mx-auto mt-2"
+                                        className="p-3 h-40 w-40 rounded-full mx-auto"
                                     />
                                 )}
+                                {
+                                    submitLoading ? (
+                                        <div className="text-center p-3 text-lg font-bold">Loading..</div>
+                                    ) : (
+                                        <button
+                                            type="submit"
+                                            className="bg-green-700 p-3 ml-3 mr-3 rounded-lg hover:opacity-90 text-lg"
+                                        >
+                                            Sign Up
+                                        </button>
+                                    )
+                                }
 
-                                <button
-                                    type="submit"
-                                    className="bg-green-700 p-3 ml-3 mr-3 rounded-lg hover:opacity-90 text-lg"
-                                >
-                                    Sign Up
-                                </button>
 
                                 <Link to={"/login"} className="text-center hover:underline text-lg m-2">
                                     Already have an account?

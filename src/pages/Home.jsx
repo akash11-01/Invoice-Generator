@@ -35,7 +35,6 @@ export default function Home() {
 
     useEffect(() => {
         getData()
-        // createChart()
     }, [])
 
     const getData = async () => {
@@ -119,13 +118,13 @@ export default function Home() {
                 </div>
             </div>
             <div className="h-[57%] flex gap-10 mt-8">
-                <div className="bg-white w-[60%] rounded-lg">
+                <div className="bg-white w-[65%] rounded-lg">
                     <canvas id="myChart"></canvas>
                 </div>
-                <div className="bg-white w-[40%] rounded-lg">
+                <div className="bg-white w-[35%] rounded-lg">
                     <p className='text-center p-4 bg-blue-700 font-semibold text-white border'>Recent Invoice List</p>
                     <div className="">
-                        <div className="flex justify-evenly">
+                        <div className="flex justify-between font-bold p-1">
                             <p>Customer Name</p>
                             <p>Date</p>
                             <p>Total</p>
@@ -134,7 +133,7 @@ export default function Home() {
                         {[...invoices]
                             .sort((a, b) => b.date.seconds - a.date.seconds) // sorted in Newest to Oldest Invoice created
                             .map(data => (
-                                <div className="flex justify-evenly">
+                                <div className="flex justify-between p-1">
                                     <p>{data.to}</p>
                                     <p>{new Date(data.date.seconds * 1000).toLocaleDateString()}</p>
                                     <p>{data.Total}</p>

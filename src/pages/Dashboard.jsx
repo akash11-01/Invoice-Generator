@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Link, Outlet, useNavigate } from 'react-router-dom'
 import { getAuth, signOut } from 'firebase/auth';
 import { FaFileInvoice, FaHome } from 'react-icons/fa';
@@ -18,6 +18,13 @@ export default function Dashboard() {
             console.log(err)
         })
     }
+
+    useEffect(() => {
+        const user = localStorage.getItem('uid');
+        if (user == null) {
+            navigate('/')
+        }
+    }, [])
 
     return (
         <div className='flex'>
