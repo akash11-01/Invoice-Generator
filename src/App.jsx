@@ -6,6 +6,7 @@ import Invoices from "./pages/Invoices"
 import Setting from "./pages/Setting"
 import Home from "./pages/Home"
 import NewInvoice from "./pages/NewInvoice"
+import InvoiceDetails from "./pages/InvoiceDetails"
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="invoices" element={<Invoices />} />
           <Route path="setting" element={<Setting />} />
           <Route path="new-invoice" element={<NewInvoice />} />
+          <Route path="invoice-details" element={<InvoiceDetails />} />
         </Route>
       </Routes>
     </BrowserRouter>

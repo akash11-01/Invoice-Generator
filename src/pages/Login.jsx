@@ -7,6 +7,7 @@ export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("")
     const navigate = useNavigate();
+    const [error, setError] = useState("");
 
     const submitHandler = (e) => {
         e.preventDefault();
@@ -14,9 +15,14 @@ export default function Login() {
             .then((userCredentials) => {
                 const user = userCredentials.user
                 // console.log(user)
+                localStorage.setItem('cName', user.displayName);
+                localStorage.setItem('photoURL', user.photoURL);
+                localStorage.setItem('email', user.email);
+                localStorage.setItem('uid', user.uid)
                 navigate('/dashboard')
             })
             .catch((err) => {
+                setError(err.message)
                 console.log(err)
             })
     }
@@ -46,10 +52,13 @@ export default function Login() {
                                     onChange={(e) => setPassword(e.target.value)}
                                 />
                                 <button type='submit' className='bg-green-700 p-3 mt-5 ml-3 mr-3 rounded-lg hover:opacity-90 text-lg'>Login</button>
-                                <Link to={'/register'} className='text-center hover:underline'>
+                                <Link to={'/register'} className='text-center hover:underline text-lg mb-3'>
                                     create account
                                 </Link>
                             </form>
+                            {error &&
+                                <div className="text-red-600 font-bold text-center">{error}</div>
+                            }
                         </div>
                     </div>
                 </div>

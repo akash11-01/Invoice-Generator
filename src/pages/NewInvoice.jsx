@@ -10,12 +10,11 @@ export default function NewInvoice() {
     const [to, setTo] = useState('')
     const [phone, setPhone] = useState("")
     const [address, setAddress] = useState("")
-
     const [products, setProducts] = useState([]);
-    const [Total, setTotal] = use; State(0)
-    const navigate = useNavigate(
+    const [Total, setTotal] = useState(0)
+    const navigate = useNavigate()
 
-    )
+
     const handleSubmit = (e) => {
         e.preventDefault();
         setProducts([...products, { 'id': products.length, 'name': productName, 'price': productPrice, 'quantity': productQuantity }])
@@ -41,11 +40,13 @@ export default function NewInvoice() {
             address: address,
             products: products,
             Total: Total,
+            uid: localStorage.getItem('uid'),
             date: Timestamp.fromDate(new Date())
         })
-        navigate('./dashoboard')
-        console.log(data)
+
+        // console.log(data)
     }
+
     return (
         <div className="">
             <div className='ml-3 p-2'>
@@ -110,7 +111,6 @@ export default function NewInvoice() {
                             <p>Price</p>
                             <p>Quantity</p>
                             <p>Total Price</p>
-
                         </div>
                         <div className=''>
                             {products.map((data, index) => (
@@ -119,7 +119,7 @@ export default function NewInvoice() {
                                     <p className="">{data.name}</p>
                                     <p className="">{data.price}</p>
                                     <p className="">{data.quantity}</p>
-                                    <p className="">{data.quantity * data.price}</p>
+                                    <p className="max-w-screen-">{data.quantity * data.price}</p>
                                 </div>
                             ))}
                             <p className='border border-blue-600 mt-2'></p>
