@@ -13,7 +13,7 @@ export default function Dashboard() {
         const auth = getAuth();
         signOut(auth).then(() => {
             localStorage.clear();
-            navigate('/login')
+            navigate('/')
         }).catch((err) => {
             console.log(err)
         })

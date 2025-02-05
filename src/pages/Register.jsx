@@ -40,7 +40,7 @@ export default function Login() {
         const data = new FormData();
         data.append("file", file);
         data.append("upload_preset", "Profile_Picture");
-        data.append("cloud_name", "dx9vis2rv");
+        data.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
 
         try {
             const res = await fetch(
@@ -172,6 +172,7 @@ export default function Login() {
                                         <button
                                             type="submit"
                                             className="bg-green-700 p-3 ml-3 mr-3 rounded-lg hover:opacity-90 text-lg"
+                                            disabled={uploadLoading}
                                         >
                                             Sign Up
                                         </button>
@@ -179,7 +180,7 @@ export default function Login() {
                                 }
 
 
-                                <Link to={"/login"} className="text-center hover:underline text-lg m-2">
+                                <Link to={"/"} className="text-center hover:underline text-lg m-2">
                                     Already have an account?
                                 </Link>
                             </form>

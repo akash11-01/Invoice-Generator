@@ -18,7 +18,7 @@ export default function Setting() {
             const data = new FormData();
             data.append("file", file);
             data.append("upload_preset", "Profile_Picture");
-            data.append("cloud_name", "dx9vis2rv");
+            data.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
 
             try {
                 const res = await fetch(
