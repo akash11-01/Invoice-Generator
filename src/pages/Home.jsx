@@ -56,7 +56,10 @@ export default function Home() {
                 t = t + data.Total
             })
         }
+        setTotal(t)
     }
+
+
 
 
     return (
