@@ -6,20 +6,20 @@ import { db } from '../firebas';
 Chart.register(...registerables);
 
 export default function Home() {
-    const [total, setTotal] = useState(123)
-    const [totalInvoice, setTotalInvoice] = useState(432)
-    const [totalMonthCollection, setTotalMonthCollection] = useState(2543)
-    const [invoices, setInvoices] = useState()
+    const [total, setTotal] = useState()
+    const [totalMonthCollection, setTotalMonthCollection] = useState()
+    const [invoices, setInvoices] = useState([])
 
-    const createChart = () => {
+
+    const createChart = (chartData) => {
         const ctx = document.getElementById('myChart');
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                labels: Object.keys(chartData),
                 datasets: [{
                     label: '# of Votes',
-                    data: [12, 19, 3, 5, 2, 3],
+                    data: Object.values(chartData),
                     borderWidth: 1
                 }]
             },
@@ -34,8 +34,8 @@ export default function Home() {
     }
 
     useEffect(() => {
-        // createChart()
         getData()
+        // createChart()
     }, [])
 
     const getData = async () => {
@@ -45,8 +45,10 @@ export default function Home() {
             id: doc.id,
             ...doc.data() //Har ek document ka data
         }))
-        setInvoices(data)
-        getOverllTotal()
+        setInvoices(data);
+        getOverllTotal();
+        getMonthTotal();
+        monthWiseData();
     }
 
     const getOverllTotal = () => {
@@ -59,8 +61,46 @@ export default function Home() {
         setTotal(t)
     }
 
+    const monthWiseData = () => {
+        const chartData = {
+            "January": 0,
+            "February": 0,
+            "March": 0,
+            "April": 0,
+            "May": 0,
+            "June": 0,
+            "July": 0,
+            "August": 0,
+            "September": 0,
+            "October": 0,
+            "November": 0,
+            "December": 0
+        }
 
+        {
+            invoices && invoices.forEach((data) => {
+                if (new Date(data.date.seconds * 1000).getFullYear() == new Date().getFullYear()) { // getting the current Year
+                    console.log(new Date(data.date.seconds * 1000).toLocaleDateString('default', { month: 'long' }))
+                    // const chartDateKey = new Date(data.date.seconds * 1000).toLocaleDateString('default', { month: 'long' }) // this will return month's Name
+                    chartData[new Date(data.date.seconds * 1000).toLocaleDateString('default', { month: 'long' })] += data.Total
+                }
+            })
+            createChart(chartData)
+        }
+    }
 
+    const getMonthTotal = () => {
+        let mt = 0;
+        {
+            invoices && invoices.forEach((data) => {
+                if (new Date(data.date.seconds * 1000).getMonth() == new Date().getMonth()) {
+                    // console.log(data)
+                    mt = mt + data.Total
+                }
+            })
+            setTotalMonthCollection(mt)
+        }
+    }
 
     return (
         <div className='h-screen p-1'>
@@ -70,7 +110,7 @@ export default function Home() {
                     <p className='font-semibold'>Overall</p>
                 </div>
                 <div className="bg-purple-600 w-1/3 rounded-lg bg-gradient-to-r from-purple-500 to-purple-900 flex flex-col items-center justify-center">
-                    <h1 className='text-3xl font-bold'>{totalInvoice}</h1>
+                    <h1 className='text-3xl font-bold'>{invoices.length}</h1>
                     <p className='font-semibold'>Invoices</p>
                 </div>
                 <div className="bg-gray-800 w-1/3 rounded-lg bg-gradient-to-l from-gray-400 to-gray-700 flex flex-col items-center justify-center">
@@ -84,9 +124,23 @@ export default function Home() {
                 </div>
                 <div className="bg-white w-[40%] rounded-lg">
                     <p className='text-center p-4 bg-blue-700 font-semibold text-white border'>Recent Invoice List</p>
-                    <div className="flex justify-evenly">
-                        <p>Customer Name</p>
-                        <p>{new Date().toLocaleDateString()}</p>
+                    <div className="">
+                        <div className="flex justify-evenly">
+                            <p>Customer Name</p>
+                            <p>Date</p>
+                            <p>Total</p>
+                        </div>
+                        {/* we dont have to show all invoice just show 5-6 */}
+                        {[...invoices]
+                            .sort((a, b) => b.date.seconds - a.date.seconds) // sorted in Newest to Oldest Invoice created
+                            .map(data => (
+                                <div className="flex justify-evenly">
+                                    <p>{data.to}</p>
+                                    <p>{new Date(data.date.seconds * 1000).toLocaleDateString()}</p>
+                                    <p>{data.Total}</p>
+                                </div>
+                            ))
+                        }
                     </div>
                 </div>
             </div>
