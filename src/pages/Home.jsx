@@ -1,19 +1,27 @@
-// import { Chart } from 'chart.js'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react';
 import { Chart, registerables } from 'chart.js';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../firebas';
+
 Chart.register(...registerables);
 
 export default function Home() {
-    const [total, setTotal] = useState()
-    const [totalMonthCollection, setTotalMonthCollection] = useState()
-    const [invoices, setInvoices] = useState([])
-
+    const [total, setTotal] = useState(0);
+    const [totalMonthCollection, setTotalMonthCollection] = useState(0);
+    const [invoices, setInvoices] = useState([]);
+    const chartRef = useRef(null); // Store chart instance
 
     const createChart = (chartData) => {
-        const ctx = document.getElementById('myChart');
-        new Chart(ctx, {
+        const ctx = document.getElementById('myChart')?.getContext('2d');
+        if (!ctx) return;
+
+        // Destroy existing chart if it exists
+        if (chartRef.current) {
+            chartRef.current.destroy();
+        }
+
+        // Create a new chart and store the instance
+        chartRef.current = new Chart(ctx, {
             type: 'bar',
             data: {
                 labels: Object.keys(chartData),
@@ -24,6 +32,8 @@ export default function Home() {
                 }]
             },
             options: {
+                responsive: true,
+                maintainAspectRatio: false,
                 scales: {
                     y: {
                         beginAtZero: true
@@ -31,75 +41,58 @@ export default function Home() {
                 }
             }
         });
-    }
+    };
 
     useEffect(() => {
-        getData()
-    }, [])
+        getData();
+    }, []);
+
+    useEffect(() => {
+        if (invoices.length > 0) {
+            getOverallTotal();
+            getMonthTotal();
+            monthWiseData();
+        }
+    }, [invoices]);
 
     const getData = async () => {
-        const q = query(collection(db, "invoice"), where('uid', "==", localStorage.getItem('uid'))) // filtering the invoice og particular user
-        const querySnapshot = await getDocs(q)
+        const q = query(collection(db, "invoice"), where('uid', "==", localStorage.getItem('uid')));
+        const querySnapshot = await getDocs(q);
         const data = querySnapshot.docs.map(doc => ({
             id: doc.id,
-            ...doc.data() //Har ek document ka data
-        }))
+            ...doc.data()
+        }));
         setInvoices(data);
-        getOverllTotal();
-        getMonthTotal();
-        monthWiseData();
-    }
+    };
 
-    const getOverllTotal = () => {
-        let t = 0;
-        {
-            invoices && invoices.forEach((data) => {
-                t = t + data.Total
-            })
-        }
-        setTotal(t)
-    }
+    const getOverallTotal = () => {
+        let t = invoices.reduce((sum, data) => sum + data.Total, 0);
+        setTotal(t);
+    };
+
+    const getMonthTotal = () => {
+        let mt = invoices.reduce((sum, data) =>
+            new Date(data.date.seconds * 1000).getMonth() === new Date().getMonth() ? sum + data.Total : sum,
+            0);
+        setTotalMonthCollection(mt);
+    };
 
     const monthWiseData = () => {
         const chartData = {
-            "January": 0,
-            "February": 0,
-            "March": 0,
-            "April": 0,
-            "May": 0,
-            "June": 0,
-            "July": 0,
-            "August": 0,
-            "September": 0,
-            "October": 0,
-            "November": 0,
-            "December": 0
-        }
+            "January": 0, "February": 0, "March": 0, "April": 0,
+            "May": 0, "June": 0, "July": 0, "August": 0,
+            "September": 0, "October": 0, "November": 0, "December": 0
+        };
 
-        {
-            invoices && invoices.forEach((data) => {
-                if (new Date(data.date.seconds * 1000).getFullYear() == new Date().getFullYear()) { // getting the current Year
-                    console.log(new Date(data.date.seconds * 1000).toLocaleDateString('default', { month: 'long' }))
-                    // const chartDateKey = new Date(data.date.seconds * 1000).toLocaleDateString('default', { month: 'long' }) // this will return month's Name
-                    chartData[new Date(data.date.seconds * 1000).toLocaleDateString('default', { month: 'long' })] += data.Total
-                }
-            })
-            createChart(chartData)
-        }
-    }
+        invoices.forEach((data) => {
+            if (new Date(data.date.seconds * 1000).getFullYear() === new Date().getFullYear()) {
+                let monthName = new Date(data.date.seconds * 1000).toLocaleDateString('default', { month: 'long' });
+                chartData[monthName] += data.Total;
+            }
+        });
 
-    const getMonthTotal = () => {
-        let mt = 0;
-        {
-            invoices && invoices.forEach((data) => {
-                if (new Date(data.date.seconds * 1000).getMonth() == new Date().getMonth()) {
-                    // console.log(data)
-                    mt = mt + data.Total
-                }
-            })
-            setTotalMonthCollection(mt)
-        }
-    }
+        createChart(chartData);
+    };
 
     return (
         <div className='h-screen p-1'>
@@ -123,26 +116,22 @@ export default function Home() {
                 </div>
                 <div className="bg-white w-[35%] rounded-lg">
                     <p className='text-center p-4 bg-blue-700 font-semibold text-white border'>Recent Invoice List</p>
-                    <div className="">
+                    <div>
                         <div className="flex justify-between font-bold p-1">
                             <p>Customer Name</p>
                             <p>Date</p>
                             <p>Total</p>
                         </div>
-                        {/* we dont have to show all invoice just show 5-6 */}
-                        {[...invoices]
-                            .sort((a, b) => b.date.seconds - a.date.seconds) // sorted in Newest to Oldest Invoice created
-                            .map(data => (
-                                <div className="flex justify-between p-1">
-                                    <p>{data.to}</p>
-                                    <p>{new Date(data.date.seconds * 1000).toLocaleDateString()}</p>
-                                    <p>{data.Total}</p>
-                                </div>
-                            ))
-                        }
+                        {invoices.sort((a, b) => b.date.seconds - a.date.seconds).slice(0, 6).map((data, index) => (
+                            <div key={index} className="flex justify-between p-1">
+                                <p>{data.to}</p>
+                                <p>{new Date(data.date.seconds * 1000).toLocaleDateString()}</p>
+                                <p>{data.Total}</p>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </div>
         </div>
-    )
+    );
 }
