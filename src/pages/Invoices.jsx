@@ -60,9 +60,9 @@ export default function Invoices() {
                     </div>
                 </div>
             )) : (
-                <div className="">
-                    <p>You don't have any Invoice</p>
-                    <Link to={'/dashboard/new-invoice'}>Create New Invoice</Link>
+                <div className="h-screen flex flex-col items-center justify-center">
+                    <p className='text-lg font-semibold p-3 text-red-600'>You don't have any Invoice</p>
+                    <Link to={'/dashboard/new-invoice'} className='border p-3 bg-blue-700 text-white font-bold rounded-lg' >Create New Invoice</Link>
                 </div>
             ) : (
                 <div className="text-center font-bold text-lg">Loading..</div>
