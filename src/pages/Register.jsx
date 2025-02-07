@@ -153,7 +153,7 @@ export default function Login() {
                                     >
                                         Upload Image
                                     </button> : (
-                                        <div className="text-center">Uploading Image</div>
+                                        <div className="text-center p-3 text-red-500">Uploading Image..</div>
                                     )
                                 }
 
@@ -167,7 +167,7 @@ export default function Login() {
                                 )}
                                 {
                                     submitLoading ? (
-                                        <div className="text-center p-3 text-lg font-bold">Loading..</div>
+                                        <div className="text-center text-green-500 p-3 text-xl font-semibold">Please wait..</div>
                                     ) : (
                                         <button
                                             type="submit"
